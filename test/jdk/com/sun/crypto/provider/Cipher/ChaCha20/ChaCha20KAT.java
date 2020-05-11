@@ -38,15 +38,26 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.AEADBadTagException;
 import java.nio.ByteBuffer;
-import jdk.test.lib.Convert;
 
 public class ChaCha20KAT {
+
+    // Convert a hexadecimal string to a byte array
+    public static byte[] hexStringToByteArray(String str) {
+        byte[] result = new byte[str.length() / 2];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = (byte) Character.digit(str.charAt(2 * i), 16);
+            result[i] <<= 4;
+            result[i] += Character.digit(str.charAt(2 * i + 1), 16);
+        }
+        return result;
+    }
+
     public static class TestData {
         public TestData(String name, String keyStr, String nonceStr, int ctr,
                 int dir, String inputStr, String aadStr, String outStr) {
             testName = Objects.requireNonNull(name);
-            key = Convert.hexStringToByteArray(Objects.requireNonNull(keyStr));
-            nonce = Convert.hexStringToByteArray(
+            key = hexStringToByteArray(Objects.requireNonNull(keyStr));
+            nonce = hexStringToByteArray(
                     Objects.requireNonNull(nonceStr));
             if ((counter = ctr) < 0) {
                 throw new IllegalArgumentException(
@@ -58,11 +69,11 @@ public class ChaCha20KAT {
                 throw new IllegalArgumentException(
                         "Direction must be ENCRYPT_MODE or DECRYPT_MODE");
             }
-            input = Convert.hexStringToByteArray(
+            input = hexStringToByteArray(
                     Objects.requireNonNull(inputStr));
             aad = (aadStr != null) ?
-                Convert.hexStringToByteArray(aadStr) : null;
-            expOutput = Convert.hexStringToByteArray(
+                hexStringToByteArray(aadStr) : null;
+            expOutput = hexStringToByteArray(
                     Objects.requireNonNull(outStr));
         }
 

@@ -35,16 +35,49 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.ChaCha20ParameterSpec;
 
-import jdk.test.lib.Utils;
-
 public class ChaCha20KeyGeneratorTest {
+
+    private static final char[] hexArray = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    /**
+     * Returns hex view of byte array
+     *
+     * @param bytes byte array to process
+     * @return space separated hexadecimal string representation of bytes
+     */
+     public static String toHexString(byte[] bytes) {
+         char[] hexView = new char[bytes.length * 3 - 1];
+         for (int i = 0; i < bytes.length - 1; i++) {
+             hexView[i * 3] = hexArray[(bytes[i] >> 4) & 0x0F];
+             hexView[i * 3 + 1] = hexArray[bytes[i] & 0x0F];
+             hexView[i * 3 + 2] = ' ';
+         }
+         hexView[hexView.length - 2] = hexArray[(bytes[bytes.length - 1] >> 4) & 0x0F];
+         hexView[hexView.length - 1] = hexArray[bytes[bytes.length - 1] & 0x0F];
+         return new String(hexView);
+     }
+
+    /**
+      * Returns byte array of hex view
+      *
+      * @param hex hexadecimal string representation
+      * @return byte array
+      */
+     public static byte[] toByteArray(String hex) {
+         int length = hex.length();
+         byte[] bytes = new byte[length / 2];
+         for (int i = 0; i < length; i += 2) {
+             bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                     + Character.digit(hex.charAt(i + 1), 16));
+         }
+         return bytes;
+     }
 
     public static void main(String[] args) throws Exception {
         KeyGenerator generator = KeyGenerator.getInstance("ChaCha20");
 
         try {
             generator.init(new ChaCha20ParameterSpec(
-                    Utils.toByteArray("100000000000000000000000"), 0));
+                    toByteArray("100000000000000000000000"), 0));
             throw new RuntimeException(
                     "ChaCha20 key generation should not consume AlgorithmParameterSpec");
         } catch (InvalidAlgorithmParameterException e) {
@@ -65,7 +98,7 @@ public class ChaCha20KeyGeneratorTest {
         generator.init(256);
         SecretKey key = generator.generateKey();
         byte[] keyValue = key.getEncoded();
-        System.out.println("Key: " + Utils.toHexString(keyValue));
+        System.out.println("Key: " + toHexString(keyValue));
         if (keyValue.length != 32) {
             throw new RuntimeException("The size of generated key must be 256");
         }
